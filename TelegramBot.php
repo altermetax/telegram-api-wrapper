@@ -22,15 +22,15 @@ class TelegramBot
     {
       if($value === null) unset($args[$arg]);
     }
-    try {
-      $request = new HTTPRequest($url, HttpRequest::METH_POST);
-      $request->addPostFields($args);
-      $request->send();
-      $json = $request->getBody();
-    } catch (Exception $e) {
-      die("Exception while creating/sending HTTP POST request:\n".$e);
-    }
+    $request = curl_init($url);
+    curl_setopt($request, CURLOPT_POST, 1);
+    curl_setopt($request, CURLOPT_POSTFIELDS, $args);
+    curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
+    $json = curl_exec($request);
+
     $object = json_decode($json);
+
+    curl_close($request);
 
     return $object;
   }
@@ -51,7 +51,7 @@ class TelegramBot
   {
     $file = fopen("offset", "r");
     if(!$file) die("Can't open file 'offset' in r mode");
-    $offset = fread("offset", filesize("offset"));
+    $offset = fread($file, filesize("offset"));
     if($offset === false) die("Can't read from file 'offset' in r mode");
     $close = fclose($file);
     if(!$close) die("Can't close file 'offset' in r mode");
@@ -67,19 +67,35 @@ class TelegramBot
     if(isset($message->audio)) return "audio";
     if(isset($message->video)) return "video";
     if(isset($message->location)) return "location";
+    if(isset($message->sticker)) return "sticker";
+    if(isset($message->new_chat_participant)) return "new_chat_participant";
+    if(isset($message->left_chat_participant)) return "left_chat_participant";
+    if(isset($message->new_chat_title)) return "new_chat_title";
+    if(isset($message->new_chat_photo)) return "new_chat_photo";
+    if(isset($message->delete_chat_photo)) return "delete_chat_photo";
+    if(isset($message->group_chat_created)) return "group_chat_created";
+    if(isset($message->supergroup_chat_created)) return "supergroup_chat_created";
+    if(isset($message->channel_chat_created)) return "channel_chat_created";
+    if(isset($message->migrate_to_chat_id)) return "migrate_to_chat_id";
+    if(isset($message->migrate_from_chat_id)) return "migrate_from_chat_id";
 
     return false;
   }
 
   public function getUpdates($offset = null, $limit = null, $timeout = null)
   {
-    if($offset === self::OFFSET_FROM_FILE) $offset = readOffset() + 1;
+    if($offset === self::OFFSET_FROM_FILE) $offset = $this->readOffset() + 1;
     $updates = $this->runRequest("getUpdates", [
       "offset" => $offset,
       "limit" => $limit,
       "timeout" => $timeout
-    ]);
-    $this->writeOffset(end($updates));
+    ])->result;
+    $array = (array)$updates;
+    foreach($array as $value)
+    {
+      $lastUpd = $value;
+    }
+    if(count($array) !== 0) $this->writeOffset($lastUpd->update_id);
 
     return $updates;
   }
