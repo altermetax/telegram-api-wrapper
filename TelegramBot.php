@@ -49,6 +49,11 @@ class TelegramBot
 
   protected function readOffset()
   {
+    if(!file_exists("offset")) {
+      touch("offset");
+      return 0;
+    }
+
     $file = fopen("offset", "r");
     if(!$file) die("Can't open file 'offset' in r mode");
     $offset = fread($file, filesize("offset"));
@@ -68,6 +73,7 @@ class TelegramBot
     if(isset($message->video)) return "video";
     if(isset($message->location)) return "location";
     if(isset($message->sticker)) return "sticker";
+    if(isset($message->document)) return "document";
     if(isset($message->new_chat_participant)) return "new_chat_participant";
     if(isset($message->left_chat_participant)) return "left_chat_participant";
     if(isset($message->new_chat_title)) return "new_chat_title";
@@ -254,10 +260,10 @@ class TelegramBot
     return $file;
   }
 
-  public function downloadFile($file)
+  public function downloadFile($file, $folder)
   {
     $download = file_get_contents("https://api.telegram.org/file/bot".$this->token."/".$file->file_path);
-    file_put_contents("downloads/".$file->file_path, $download);
+    file_put_contents($folder."/".$file->file_path, $download);
 
     return $download;
   }
