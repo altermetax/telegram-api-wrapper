@@ -1,6 +1,8 @@
 <?php
 
-class TelegramBot
+namespace Telegram;
+
+class Bot
 {
   protected $token;
   const OFFSET_FROM_FILE = "offset_from_file";
@@ -32,7 +34,9 @@ class TelegramBot
 
     curl_close($request);
 
-    return $object;
+    if(!$object->ok) throw new Exception("Telegram Bot API Error - Could not run ".$apiMethod." because Telegram servers returned error ".$updates->error_code.": ".$updates->description);
+
+    return $object->result;
   }
 
   protected function writeOffset($offset)
@@ -95,7 +99,7 @@ class TelegramBot
       "offset" => $offset,
       "limit" => $limit,
       "timeout" => $timeout
-    ])->result;
+    ]);
     $array = (array)$updates;
     foreach($array as $value)
     {
@@ -232,12 +236,12 @@ class TelegramBot
 
   public function sendChatAction($chat_id, $action)
   {
-    $this->runRequest("sendChatAction", [
+    $action = $this->runRequest("sendChatAction", [
       "chat_id" => $chat_id,
       "action" => $action
     ]);
 
-    return true;
+    return $action;
   }
 
   public function getUserProfilePhotos($user_id, $offset = null, $limit = null)
@@ -266,12 +270,6 @@ class TelegramBot
     file_put_contents($folder."/".$file->file_path, $download);
 
     return $download;
-  }
-
-  public function createKeyboard($keyboard)
-  {
-    if(!isset($keyboard->keyboard)) throw new Exception("The object sent to createKeyboard() isn't a keyboard!");
-    return json_encode($keyboard);
   }
 }
 
