@@ -34,7 +34,7 @@ class Bot
 
     curl_close($request);
 
-    if(!$object->ok) throw new Exception("Telegram Bot API Error - Could not run ".$apiMethod." because Telegram servers returned error ".$updates->error_code.": ".$updates->description);
+    if(!$object->ok) throw new Exception("Telegram Bot API Error - Could not run ".$apiMethod." because Telegram servers returned error ".$object->error_code.": ".$object->description);
 
     return $object->result;
   }
