@@ -7,7 +7,7 @@ The method names are identical to those [here](https://core.telegram.org/bots/ap
 Here are some basic examples:
 
 ```
-$bot = new TelegramBot($token); // $token is a string given by Bot Father when creating your bot
+$bot = new \Telegram\Bot($token); // $token is a string given by Bot Father when creating your bot
 
 $updates = $bot->getUpdates(); // Will get updates for your bot as a stdClass object.
 
@@ -16,7 +16,7 @@ foreach($updates as $update) { // Do the following for each new message:
   $bot->sendMessage($update->message->chat->id, "Message received."); // Send a confirmation message back to the user / group
 }
 
-$updates = $bot->getUpdates(TelegramBot::OFFSET_FROM_FILE); // This will automate the offset argument: the wrapper will request for the latest message for you, by reading it from a file named "offset" in the same folder as the TelegramBot.php file.
+$updates = $bot->getUpdates(\Telegram\Bot::OFFSET_FROM_FILE); // This will automate the offset argument: the wrapper will request for the latest message for you, by reading it from a file named "offset" in the same folder as the TelegramBot.php file.
 
 // Same thing works for photos (sendPhoto), videos (sendVideo), voices (sendVoice), legacy audios (sendAudio) and so on.
 
